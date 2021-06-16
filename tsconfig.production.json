@@ -1,0 +1,18 @@
+{
+  "compilerOptions": {
+    "skipLibCheck": true,
+    "sourceMap": false,
+    "outDir": "dist",
+    "strict": true,
+    "lib": [
+      "esnext"
+    ],
+    "target": "ES5",
+    "esModuleInterop": true,
+    "typeRoots": [
+      "src/typings",
+      "node_modules/@types"
+    ],
+    "experimentalDecorators": true
+  }
+}

@@ -1,0 +1,57 @@
+{
+  "name": "todo-list-api",
+  "version": "1.0.0",
+  "description": "",
+  "main": "index.js",
+  "private": true,
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1",
+    "dev": "ts-node --transpile-only --project tsconfig.json ./src/app.ts ",
+    "nodemon": "nodemon src/app.ts",
+    "start:dev": "npx prisma generate && ts-node --transpile-only --project tsconfig.json ./src/app.ts ",
+    "prisma:generate": "npx prisma generate"
+  },
+  "nodemonConfig": {
+    "delay": "2500",
+    "watch": "src/**",
+    "ext": "ts,json",
+    "ignore": [
+      "src/**/*.spec.ts"
+    ],
+    "execMap": {
+      "ts": "ts-node"
+    }
+  },
+  "engines": {
+    "node": ">=12.9.1 <15"
+  },
+  "keywords": [],
+  "author": "",
+  "license": "ISC",
+  "dependencies": {
+    "cors": "^2.8.5",
+    "dotenv": "^10.0.0",
+    "express": "^4.17.1",
+    "express-session": "^1.17.2",
+    "http-status-codes": "^2.1.4",
+    "moment": "^2.29.1",
+    "passport": "^0.4.1",
+    "passport-auth0": "^1.4.0",
+    "querystring": "^0.2.1",
+    "socket.io": "^4.1.2"
+  },
+  "devDependencies": {
+    "@prisma/client": "^2.24.1",
+    "@types/cookie-parser": "^1.4.2",
+    "@types/express": "^4.17.12",
+    "@types/express-session": "^1.17.3",
+    "@types/passport": "^1.0.6",
+    "@types/passport-auth0": "^1.0.4",
+    "@types/socket.io": "^3.0.2",
+    "cookie-parser": "^1.4.5",
+    "nodemon": "^2.0.7",
+    "prisma": "^2.24.1",
+    "ts-node": "^10.0.0",
+    "typescript": "^4.3.2"
+  }
+}

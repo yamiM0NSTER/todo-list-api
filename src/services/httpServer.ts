@@ -12,6 +12,7 @@ import cors from 'cors';
 import { userController } from '../controllers/user';
 import { prisma } from './prisma';
 import { authorized } from '../middlewares/authorized';
+import { phpApi } from './phpApi';
 
 class HttpServer {
   private _httpServer?: Server;
@@ -72,18 +73,12 @@ class HttpServer {
          * profile has all the information from the user
          */
 
-        const user = await prisma.user.findFirst({
-          where: {
-            email: profile.emails![0].value,
-          },
-        });
+        const user = await phpApi.getUser(profile.emails![0].value);
 
         if (!user) {
-          const newUser = await prisma.user.create({
-            data: {
-              email: profile.emails![0].value,
-              displayName: profile.displayName,
-            },
+          const newUser = await phpApi.addUser({
+            email: profile.emails![0].value,
+            displayName: profile.displayName,
           });
 
           return done(null, newUser);

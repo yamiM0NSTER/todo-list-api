@@ -4,6 +4,7 @@ import { Task, User } from '.prisma/client';
 import { TASK_STATUS } from '../types';
 import { wsServer } from './wsServer';
 import moment from 'moment';
+import { phpApi } from './phpApi';
 
 class TaskStatuses {
   private _tasks: { [Key: number]: TaskStatusDto };
@@ -15,20 +16,11 @@ class TaskStatuses {
   }
 
   public start = async () => {
-    const tasks = await prisma.task.findMany({
-      where: {
-        NOT: {
-          taskState: TASK_STATUS.DELETED,
-        },
-      },
-      include: {
-        User: true,
-      },
-    });
+    const tasks = await phpApi.getTasks();
 
     const curTimestamp = moment().valueOf();
 
-    tasks.map(async task => {
+    tasks!.map(async task => {
       if (moment(task.notificationTime).valueOf() <= curTimestamp) {
         this.setTaskStatus(task, TASK_STATUS.SHOWN);
         return;
@@ -96,35 +88,11 @@ class TaskStatuses {
     wsServer.emitTaskNotification(this._tasks[taskId].guid);
     wsServer.emitTaskStatus(this._tasks[taskId]);
 
-    await prisma.task.update({
-      where: {
-        id: taskId,
-      },
-      data: {
-        taskState: TASK_STATUS.SHOWN,
-        seen: wsServer.connectedUsers,
-      },
-    });
+    await phpApi.setTaskShown(taskId, wsServer.connectedUsers);
   };
 
   private updateStatuses = async () => {
-    const incommingTasks = await prisma.task.findMany({
-      where: {
-        taskState: TASK_STATUS.NEW,
-        AND: [
-          {
-            notificationTime: {
-              gt: moment().toDate(),
-            },
-          },
-          {
-            notificationTime: {
-              lte: moment().add(1, 'minute').toDate(),
-            },
-          },
-        ],
-      },
-    });
+    const incommingTasks = await phpApi.getIncommingTasks();
 
     for (const key in this._tasks) {
       const task = incommingTasks.find(task => task.id === +key);

@@ -1,8 +1,10 @@
+import { Task, User } from '@prisma/client';
+
 export class AddTaskDto {
   title!: string;
   notificationText!: string;
   notificationTime!: Date;
-  userId!: string;
+  userId!: number;
 }
 
 export class UpdateTaskDto {
@@ -34,3 +36,7 @@ export declare namespace Express {
     displayName: string;
   }
 }
+
+export type TaskWUser = Task & {
+  User: User;
+};

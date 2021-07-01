@@ -4,6 +4,7 @@ import { StatusCodes } from 'http-status-codes';
 import { AddTaskDto, TASK_STATUS, UpdateTaskDto } from '../types';
 import { taskStatuses } from '../services/taskStatuses';
 import moment from 'moment';
+import { phpApi } from '../services/phpApi';
 
 class TaskController {
   private _router: Router;
@@ -26,22 +27,14 @@ class TaskController {
   }
 
   public getTasks = async (req: Request, res: Response) => {
-    const tasks = await prisma.task.findMany({
-      include: {
-        User: true,
-      },
-    });
+    const tasks = await phpApi.getTasks();
     res.json(tasks);
   };
 
   public getTask = async (req: Request<{ id: string }>, res: Response) => {
     const { id } = req.params;
 
-    const task = await prisma.task.findUnique({
-      where: {
-        guid: id,
-      },
-    });
+    const task = await phpApi.getTask(id);
 
     if (!task) {
       return res.status(StatusCodes.NOT_FOUND).json({
@@ -66,19 +59,14 @@ class TaskController {
       });
     }
 
-    const task = await prisma.task.create({
-      data: {
-        title: title,
-        notificationText: notificationText,
-        notificationTime: notificationTime,
-        userId: req.user!.id,
-      },
-      include: {
-        User: true,
-      },
+    const task = await phpApi.addTask({
+      title: title,
+      notificationText: notificationText,
+      notificationTime: notificationTime,
+      userId: req.user!.id,
     });
 
-    taskStatuses.setTaskStatus(task);
+    taskStatuses.setTaskStatus(task!);
 
     return res.status(StatusCodes.CREATED).json(task);
   };
@@ -89,11 +77,7 @@ class TaskController {
   ) => {
     const { id } = req.params;
 
-    const task = await prisma.task.findUnique({
-      where: {
-        guid: id,
-      },
-    });
+    const task = await phpApi.getTask(id);
 
     if (!task) {
       return res.status(StatusCodes.NOT_FOUND).json({
@@ -113,19 +97,9 @@ class TaskController {
       });
     }
 
-    const updatedTask = await prisma.task.update({
-      where: {
-        guid: id,
-      },
-      data: {
-        ...req.body,
-      },
-      include: {
-        User: true,
-      },
-    });
+    const updatedTask = await phpApi.updateTask(id, req.body);
 
-    taskStatuses.setTaskStatus(updatedTask);
+    taskStatuses.setTaskStatus(updatedTask!);
 
     return res.status(StatusCodes.CREATED).json(updatedTask);
   };
@@ -133,14 +107,7 @@ class TaskController {
   public deleteTask = async (req: Request<{ id: string }>, res: Response) => {
     const { id } = req.params;
 
-    const task = await prisma.task.findUnique({
-      where: {
-        guid: id,
-      },
-      include: {
-        User: true,
-      },
-    });
+    const task = await phpApi.getTask(id);
 
     if (!task) {
       return res.status(StatusCodes.NOT_FOUND).json({
@@ -149,11 +116,7 @@ class TaskController {
       });
     }
 
-    await prisma.task.delete({
-      where: {
-        guid: id,
-      },
-    });
+    await phpApi.deleteTask(id);
 
     taskStatuses.setTaskStatus(task, TASK_STATUS.DELETED);
 
